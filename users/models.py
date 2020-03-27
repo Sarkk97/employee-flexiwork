@@ -1,16 +1,19 @@
-
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 
 from .managers import CustomUserManager
+from .utils import CustomFileStorage
 
 # Create your models here.
+def custom_avatar_upload(instance, filename):
+    return 'avatars/staff_{0}/{1}'.format(instance.staff_no, filename)
+
 class Employee(AbstractBaseUser):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     staff_no = models.CharField(max_length=50, blank=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar = models.ImageField(upload_to=custom_avatar_upload, blank=True, null=True, storage=CustomFileStorage())
     description = models.TextField(blank=True)
     #department = models.ForeignKey('Department', models.SET_NULL, null=True)
     date_registered = models.DateTimeField(auto_now_add=True)

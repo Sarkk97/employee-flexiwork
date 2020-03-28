@@ -5,7 +5,7 @@ from django.core.files import File
 from django.contrib.auth import get_user_model
 
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIRequestFactory
 
 from ..serializers import EmployeeSerializer
 
@@ -23,7 +23,7 @@ class EmployeeCreateTests(APITestCase):
         self.authenticator()
 
     def authenticator(self):
-        url = reverse('token_obtain_pair')
+        url = reverse('token-obtain-pair')
         data = {
             'email': 'ahmed.o@e360africa.com',
             'password': 'password'
@@ -108,7 +108,7 @@ class EmployeeRetrieveUpdateDeleteTests(APITestCase):
 
 
     def authenticator(self):
-        url = reverse('token_obtain_pair')
+        url = reverse('token-obtain-pair')
         data = {
             'email': 'rahman.s@e360africa.com',
             'password': 'password'
@@ -147,8 +147,8 @@ class EmployeeRetrieveUpdateDeleteTests(APITestCase):
         emp.is_active = False
         emp.save()
         url = reverse('employee-detail', kwargs={'pk': 1})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        response = self.client.get(url) 
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_can_update_employee(self):
         url = reverse('employee-detail', kwargs={'pk': 1})
@@ -199,14 +199,26 @@ class EmployeeActivationTests(APITestCase):
         ahmed.save()
 
         #Now pk = 1 is active while pk =2 is inactive"
-    
+        self.authenticator()
+
+    def authenticator(self):
+        url = reverse('token-obtain-pair')
+        data = {
+            'email': 'rahman.s@e360africa.com',
+            'password': 'password'
+        }
+        response = self.client.post(url, data, format='json')
+        token = response.json()['access']
+        self.auth_user_id = response.json()['user_id']
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+
     def test_deactivate_employee(self):
         url = reverse('employee-activation', kwargs={'pk': 1})
         response = self.client.post(url, {'action': 'deactivate'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         new_response = self.client.get(reverse('employee-detail', kwargs={'pk': 1}))
-        self.assertEqual(new_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(new_response.status_code, status.HTTP_401_UNAUTHORIZED)
     
     def test_activate_employee(self):
         #pk=2 is inactive, detail api should return 404
@@ -234,5 +246,31 @@ class EmployeeActivationTests(APITestCase):
 
 
 class RequestContext(APITestCase):
+    
+    def setUp(self):
+        user_1 = {
+            'email': "ahmed.o@e360africa.com",
+            'first_name': 'Ahmed',
+            'last_name': 'Ojo',
+            'staff_no': 'EMP-002',
+            'description': 'A good software engineer'
+        }
+        get_user_model().objects.create_user(**user_1)
+        self.authenticator()
+
+    def authenticator(self):
+        url = reverse('token-obtain-pair')
+        data = {
+            'email': 'ahmed.o@e360africa.com',
+            'password': 'password'
+        }
+        response = self.client.post(url, data, format='json')
+        token = response.json()['access']
+        self.auth_user_id = response.json()['user_id']
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+    
     def test_can_access_user_in_authenticated_session(self):
-        pass
+        self.assertEqual(self.auth_user_id, 1)
+        user = get_user_model().objects.get(pk = self.auth_user_id) 
+        self.assertTrue(user.is_authenticated)
+        self.assertIsNotNone(user.last_login)

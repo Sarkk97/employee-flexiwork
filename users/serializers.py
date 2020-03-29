@@ -35,3 +35,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super(MyTokenObtainPairSerializer, self).validate(attrs)
         data.update({'user_id': self.user.pk})
         return data
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    password1 = serializers.CharField(max_length=100)
+    password2 = serializers.CharField(max_length=100)
+
+    def validate(self, data):
+        if data['password1'] != data['password2']:
+            raise serializers.ValidationError("Password1 and Password2 must match!")
+        return data

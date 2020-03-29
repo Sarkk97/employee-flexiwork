@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.core.mail import EmailMessage
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import default_token_generator
@@ -16,7 +17,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import (EmployeeSerializer, EmployeeFullSerializer,
-                         MyTokenObtainPairSerializer)
+                         MyTokenObtainPairSerializer, PasswordChangeSerializer)
 
 # Create your views here
 
@@ -80,6 +81,11 @@ class EmployeeActivation(APIView):
 
 
 class PasswordResetRequest(APIView):
+    mail_context = {
+        'subject': 'Password Reset on Flexiwork',
+        'from': 'internal@e360africa.com',
+        'cc': ['cc@e360africa.com']
+    }
     
     def post(self, request, *args, **kwargs):
         qs = get_user_model().objects.all()
@@ -90,7 +96,19 @@ class PasswordResetRequest(APIView):
         else:
             token = default_token_generator.make_token(employee)
             uid = urlsafe_base64_encode(force_bytes(employee.pk))
-            payload = reverse('password-reset-confirm', kwargs={'uid64':uid, 'token':token})
+            payload = request.build_absolute_uri(reverse('password-reset-confirm', kwargs={'uid64':uid, 'token':token}))
+            
+            email_body = 'Your password request was succesful. Click on the Verification link {} to proceed'.format(payload)
+            email_recipient = [employee_email]
+            email = EmailMessage(
+                self.mail_context['subject'],
+                email_body,
+                self.mail_context['from'],
+                email_recipient,
+                cc = self.mail_context['cc']
+            )
+            email.send()
+
             return Response(payload, status=status.HTTP_200_OK)
 
 
@@ -111,4 +129,28 @@ class PasswordResetConfirm(APIView):
             if not token_valid:
                 raise ParseError('Verification token is invalid or has expired!')
             
-            return Response('Valid verification link', status.HTTP_200_OK)
+            payload = {
+                'user_id': employee.pk,
+                'message': 'Valid verification link'
+            }
+
+            return Response(payload, status.HTTP_200_OK)
+
+
+class PasswordChange(APIView):
+    
+    def post(self, request, *args, **kwargs):
+        qs = get_user_model().objects.all()
+        user_id = request.data.pop('user_id')
+        user = get_object_or_404(qs, pk=user_id)
+        if not user.is_active:
+            raise NotFound('This email is inactive', 'inactive_user')
+    
+        serializer = PasswordChangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_password = serializer.validated_data['password1']
+        
+        user.set_password(new_password)
+        user.save()
+
+        return Response('Password Changed successfully', status.HTTP_200_OK)

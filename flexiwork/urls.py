@@ -29,6 +29,5 @@ urlpatterns = [
         template_name='redoc.html',
         extra_context={'schema_url':'openapi-schema'}),
         name='redoc'),
-
     path('api/v1/', include('users.urls'))
 ]

@@ -18,7 +18,7 @@ class EmployeeAuthentication(APITestCase):
         get_user_model().objects.create_user(**data)
 
     def test_obtain_token_valid_employee(self):
-        url = reverse('token-obtain-pair')
+        url = reverse('login')
         data = {
             'email': 'rahman.s@e360africa.com',
             'password': 'password'
@@ -111,7 +111,7 @@ class EmployeeResetPassword(APITestCase):
         user.set_password('new_password')
         user.save()
 
-        url = reverse('token-obtain-pair')
+        url = reverse('login')
         data = {
             'email': 'rahman.s@e360africa.com',
             'password': 'new_password'
@@ -184,7 +184,7 @@ class EmployeeResetPassword(APITestCase):
         self.assertContains(new_reset_response, 'Verification token is invalid or has expired!', status_code=400)
 
         #user can login
-        url = reverse('token-obtain-pair')
+        url = reverse('login')
         data = {
             'email': 'rahman.s@e360africa.com',
             'password': 'new_password'

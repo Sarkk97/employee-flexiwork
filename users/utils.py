@@ -9,13 +9,11 @@ def custom_exception_handler(exc, context):
 
     # Update the structure of the response data.
     if response is not None:
-        print(type(exc))
         customized_response = {}
-        customized_response['errors'] = exc.detail
+        customized_response['errors'] = []
 
-        # for key, value in response.data.items():
-        #     error = {'field': key, 'message': value}
-        #     customized_response['errors'].append(error)
+        for key, value in response.data.items():
+            customized_response['errors'].append({key: value})
 
         response.data = customized_response
 

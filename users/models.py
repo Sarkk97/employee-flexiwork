@@ -13,9 +13,10 @@ class Employee(AbstractBaseUser):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     staff_no = models.CharField(max_length=50, blank=True)
-    avatar = models.ImageField(upload_to=custom_avatar_upload, blank=True, null=True, storage=CustomFileStorage())
+    avatar = models.ImageField(upload_to=custom_avatar_upload, blank=True, storage=CustomFileStorage())
     description = models.TextField(blank=True)
-    #department = models.ForeignKey('Department', models.SET_NULL, null=True)
+    department = models.ForeignKey('Department', models.SET_NULL, null=True, related_name="employees")
+    role = models.ForeignKey('Role', models.SET_NULL, null=True, related_name="employees")
     date_registered = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     
@@ -26,4 +27,18 @@ class Employee(AbstractBaseUser):
 
     def __str__(self):
         return self.first_name+' '+self.last_name or self.email
-    
+
+
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Role(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name

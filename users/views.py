@@ -16,7 +16,8 @@ from rest_framework.exceptions import ParseError, NotFound
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .serializers import (EmployeeSerializer, EmployeeFullSerializer,
+from .models import Department, Role
+from .serializers import (EmployeeSerializer, EmployeeFullSerializer, DepartmentSerializer, RoleSerializer,
                          MyTokenObtainPairSerializer, PasswordChangeSerializer)
 
 # Create your views here
@@ -30,7 +31,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 
-        user_id = response.data.get('user_id')
+        user_id = response.data.get('user')["id"]
         user = get_user_model().objects.get(pk=user_id)
         user_logged_in.send(sender=user.__class__, request=request, user=user)
         return response
@@ -154,3 +155,31 @@ class PasswordChange(APIView):
         user.save()
 
         return Response('Password Changed successfully', status.HTTP_200_OK)
+
+
+class DepartmentList(generics.ListCreateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+
+
+class DepartmentDetail(generics.RetrieveUpdateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+
+
+class RoleList(generics.ListCreateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
+
+
+class RoleDetail(generics.RetrieveUpdateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer

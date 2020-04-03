@@ -3,6 +3,9 @@ from django.core.files import File
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 
+from ..models import Department, Role
+from ..serializers import EmployeeSerializer
+
 
 class UserCreateModelTest(APITestCase):
     """
@@ -11,6 +14,23 @@ class UserCreateModelTest(APITestCase):
     def test_can_create_user_in_db(self):
         user = get_user_model().objects.create_user(email="rahman.s@e360africa.com", first_name="Rahman", last_name="Solanke")
         self.assertIsNotNone(user)
+
+
+class DepartmentCreateModelTest(APITestCase):
+    def test_can_create_department(self):
+        self.assertIsNotNone(Department.objects.create(name="Technology"))
+        self.assertEqual(Department.objects.count(), 1)
+        dept = Department.objects.get(pk=1)
+        self.assertEqual(dept.name, "Technology")
+
+
+class RoleCreateModelTest(APITestCase):
+    def test_can_create_role(self):
+        self.assertIsNotNone(Role.objects.create(name="Admin"))
+        self.assertEqual(Role.objects.count(), 1)
+        role = Role.objects.get(pk=1)
+        self.assertEqual(role.name, "Admin")
+
 
 class EmployeeModelTest(APITestCase):
     """
@@ -55,3 +75,26 @@ class EmployeeModelTest(APITestCase):
         self.assertEqual(user_2.last_name, 'Ojo')
         self.assertIsNone(user_1.last_login)
         self.assertTrue(user_1.check_password('password'))
+
+
+class EmployeeDepartmentTest(APITestCase):
+    def setUp(self):
+        Department.objects.create(name="Technology")
+        Role.objects.create(name="Admin")
+
+        self.user_1 = {
+            'email': "rahman.s@e360africa.com",
+            'first_name': 'Rahman',
+            'last_name': 'Solanke',
+            'role_id': 1,
+            'department_id': 1,
+            'staff_no': 'EMP-001',
+            'description': 'A good software engineer'
+        }
+
+        get_user_model().objects.create_user(**self.user_1)
+    
+    def test_employee_detailed_serializer(self):
+        emp = get_user_model().objects.get(pk=1)
+        serializer =  EmployeeSerializer(emp)
+        self.assertIsNotNone(serializer.data)

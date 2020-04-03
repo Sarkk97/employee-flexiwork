@@ -7,11 +7,15 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory
 
+from ..models import Department, Role
 from ..serializers import EmployeeSerializer
 
 
 class EmployeeCreateTests(APITestCase):
     def setUp(self):
+        Department.objects.create(name="Technology")
+        Role.objects.create(name="Admin")
+
         user_1 = {
             'email': "ahmed.o@e360africa.com",
             'first_name': 'Ahmed',
@@ -23,7 +27,7 @@ class EmployeeCreateTests(APITestCase):
         self.authenticator()
 
     def authenticator(self):
-        url = reverse('token-obtain-pair')
+        url = reverse('login')
         data = {
             'email': 'ahmed.o@e360africa.com',
             'password': 'password'
@@ -38,6 +42,8 @@ class EmployeeCreateTests(APITestCase):
             'email': "rahman.s@e360africa.com",
             'first_name': 'Rahman',
             'last_name': 'Solanke',
+            'role_id': 1,
+            'department_id': 1,
             'staff_no': 'EMP-001',
             'description': 'A good software engineer'
         }
@@ -55,6 +61,8 @@ class EmployeeCreateTests(APITestCase):
                 'email': "rahman.s@e360africa.com",
                 'first_name': 'Rahman',
                 'last_name': 'Solanke',
+                'role_id': 1,
+                'department_id': 1,
                 'staff_no': 'EMP-001',
                 'description': 'A good software engineer',
                 'avatar': img_file
@@ -108,7 +116,7 @@ class EmployeeRetrieveUpdateDeleteTests(APITestCase):
 
 
     def authenticator(self):
-        url = reverse('token-obtain-pair')
+        url = reverse('login')
         data = {
             'email': 'rahman.s@e360africa.com',
             'password': 'password'
@@ -122,7 +130,7 @@ class EmployeeRetrieveUpdateDeleteTests(APITestCase):
         response = self.client.get(url)
         data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_get_valid_employee(self):
         url = reverse('employee-detail', kwargs={'pk': 1})
         response = self.client.get(url)
@@ -202,14 +210,14 @@ class EmployeeActivationTests(APITestCase):
         self.authenticator()
 
     def authenticator(self):
-        url = reverse('token-obtain-pair')
+        url = reverse('login')
         data = {
             'email': 'rahman.s@e360africa.com',
             'password': 'password'
         }
         response = self.client.post(url, data, format='json')
         token = response.json()['access']
-        self.auth_user_id = response.json()['user_id']
+        self.auth_user_id = response.json()['user']['id']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
 
     def test_deactivate_employee(self):
@@ -259,14 +267,14 @@ class RequestContext(APITestCase):
         self.authenticator()
 
     def authenticator(self):
-        url = reverse('token-obtain-pair')
+        url = reverse('login')
         data = {
             'email': 'ahmed.o@e360africa.com',
             'password': 'password'
         }
         response = self.client.post(url, data, format='json')
         token = response.json()['access']
-        self.auth_user_id = response.json()['user_id']
+        self.auth_user_id = response.json()['user']['id']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
     
     def test_can_access_user_in_authenticated_session(self):
@@ -274,3 +282,53 @@ class RequestContext(APITestCase):
         user = get_user_model().objects.get(pk = self.auth_user_id) 
         self.assertTrue(user.is_authenticated)
         self.assertIsNotNone(user.last_login)
+
+
+class EmployeeForeignKeysTest(APITestCase):
+    def setUp(self):
+        Department.objects.create(name="Technology")
+        Role.objects.create(name="Admin")
+
+        user_1 = {
+            'email': "ahmed.o@e360africa.com",
+            'first_name': 'Ahmed',
+            'last_name': 'Ojo',
+            'staff_no': 'EMP-002',
+            'description': 'A good software engineer'
+        }
+        get_user_model().objects.create_user(**user_1)
+
+
+        self.authenticator()
+
+
+        img_url = '/home/rahman/Pictures/Naija.png'
+        with open(img_url, 'rb') as img_file:
+            url = reverse('employee-list')
+            data = {
+                'email': "rahman.s@e360africa.com",
+                'first_name': 'Rahman',
+                'last_name': 'Solanke',
+                'role_id': 1,
+                'department_id': 1,
+                'staff_no': 'EMP-001',
+                'description': 'A good software engineer',
+                'avatar': img_file
+            }
+            response = self.client.post(url, data, format='multipart')
+            
+    def authenticator(self):
+        url = reverse('login')
+        data = {
+            'email': 'ahmed.o@e360africa.com',
+            'password': 'password'
+        }
+        response = self.client.post(url, data, format='json')
+        token = response.json()['access']
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+
+    def test_get_full_employee_details(self):
+        url = reverse('employee-list')
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

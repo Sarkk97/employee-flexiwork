@@ -15,7 +15,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+
     'users.apps.UsersConfig',
+    'clocking.apps.ClockingConfig',
 ]
 
 MIDDLEWARE = [
@@ -37,7 +39,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
-    'EXCEPTION_HANDLER': 'users.utils.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'users.utils.custom_exception_handler',
+    'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S"
 }
 
 TEMPLATES = [
@@ -89,4 +92,4 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False

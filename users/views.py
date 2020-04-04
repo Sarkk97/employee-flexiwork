@@ -60,6 +60,7 @@ class EmployeeDetail(generics.RetrieveUpdateDestroyAPIView):
             return EmployeeFullSerializer
         return EmployeeSerializer
 
+
 class EmployeeActivation(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -114,7 +115,6 @@ class PasswordResetRequest(APIView):
 
 
 class PasswordResetConfirm(APIView):
-
     def get(self, request, *args, **kwargs):
         qs = get_user_model().objects.all()
         uid64 = kwargs.get('uid64')
@@ -139,7 +139,6 @@ class PasswordResetConfirm(APIView):
 
 
 class PasswordChange(APIView):
-    
     def post(self, request, *args, **kwargs):
         qs = get_user_model().objects.all()
         user_id = request.data.pop('user_id')

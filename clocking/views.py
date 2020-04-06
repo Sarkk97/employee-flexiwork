@@ -70,6 +70,9 @@ class EmployeeClockOut(APIView):
         except ObjectDoesNotExist:
             raise NotFound("This Employee has not clocked in today and hence can't clock out!")
         
+        if current_datetime < clock_obj.expected_clock_out_timestamp:
+            raise ParseError("You can't clock out yet. Expected clock out time is {}".format(clock_obj.expected_clock_out_timestamp))
+        
         clock_obj.clock_out_timestamp = current_datetime
         clock_obj.valid_attendance = True
         clock_obj.save()

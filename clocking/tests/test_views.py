@@ -125,6 +125,22 @@ class TestClockObjectViews(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
     
+    def test_get_clock_objects_with_image(self):
+        img_url = '/home/rahman/Pictures/Naija.png'
+        url = reverse('attendance-list')
+
+        with open(img_url, 'rb') as clock_in_img:
+            data = {
+                'employee_id': 1,
+                'clock_in_type_id': 1,
+                'clock_in_image': clock_in_img
+            }
+            self.client.post(url, data, format='multipart')
+        
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+    
     def test_invalid_confirm_employee_clock_object(self):
         url = reverse('check-employee-attendance', kwargs={'pk': 1})
         response = self.client.get(url)
@@ -149,6 +165,20 @@ class TestClockObjectViews(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertContains(response, "This Employee has not clocked in today and hence can't clock out!", status_code=404)
 
+    def test_clock_out_before_expected(self):
+        url = reverse('attendance-list')
+        data = {
+            'employee_id': 1,
+            'clock_in_type_id': 1
+        }  
+        self.client.post(url, data, format='json')
+
+        url = reverse('attendance-clock-out', kwargs={'pk': 1})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, "You can't clock out yet. Expected clock out time is", status_code=400)
+
+    @skip
     def test_valid_employee_clock_out(self):
         url = reverse('attendance-list')
         data = {

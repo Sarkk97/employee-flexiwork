@@ -6,12 +6,12 @@ from django.conf import settings
 
 def clock_in_image_upload(instance, filename):
     _now = datetime.now()
-    return 'clock_in/staff_{staff_num}/{year}_{month}_{day}_{name}'.format(staff_num=instance.staff_no, name=filename,
+    return 'clock_in/staff_{staff_num}/{year}_{month}_{day}_{name}'.format(staff_num=instance.employee.staff_no, name=filename,
                                         year=_now.strftime("%Y"), month=_now.strftime("%m"), day=_now.strftime("%d"))
 
 def clock_out_image_upload(instance, filename):
     _now = datetime.now()
-    return 'clock_out/staff_{staff_num}/{year}_{month}_{day}_{name}'.format(staff_num=instance.staff_no, name=filename,
+    return 'clock_out/staff_{staff_num}/{year}_{month}_{day}_{name}'.format(staff_num=instance.employee.staff_no, name=filename,
                                         year=_now.strftime("%Y"), month=_now.strftime("%m"), day=_now.strftime("%d"))
 
 

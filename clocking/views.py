@@ -25,8 +25,28 @@ class ClockTypeList(generics.ListCreateAPIView):
 class ClockList(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = Clock.objects.all()
     serializer_class = ClockSerializer
+
+    def get_queryset(self):
+        qs = Clock.objects.all()
+        
+        employee_id = self.request.query_params.get('employee', None)
+        clock_in_type = self.request.query_params.get('type', None)
+        start_date = self.request.query_params.get('start', None)
+        end_date = self.request.query_params.get('end', None)
+
+        if employee_id:
+            qs = qs.filter(employee_id=employee_id)
+        if clock_in_type:
+            qs = qs.filter(clock_in_type_id=clock_in_type)
+        if start_date:
+            date = datetime.strptime(start_date, "%Y-%m-%d")
+            qs = qs.filter(clock_in_timestamp__date__gte=date)
+        if end_date:
+            date = datetime.strptime(end_date, "%Y-%m-%d")
+            qs = qs.filter(clock_in_timestamp__date__lte=date)
+
+        return qs
 
     def perform_create(self, serializer):
         employee_id = serializer.validated_data.get('employee').pk
@@ -74,8 +94,9 @@ class EmployeeClockOut(APIView):
             raise ParseError("You can't clock out yet. Expected clock out time is {}".format(clock_obj.expected_clock_out_timestamp))
         
         clock_obj.clock_out_timestamp = current_datetime
-        clock_obj.valid_attendance = True
+        clock_obj.valid_attendance = True   
         clock_obj.save()
 
         serializer = ClockSerializer(clock_obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
+

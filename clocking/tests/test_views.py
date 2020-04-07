@@ -1,5 +1,5 @@
 from unittest import skip
-
+from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -190,3 +190,159 @@ class TestClockObjectViews(APITestCase):
         url = reverse('attendance-clock-out', kwargs={'pk': 1})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestAttendanceFilters(APITestCase):
+    def setUp(self):
+        r = Role.objects.create(name="Admin")
+        d = Department.objects.create(name="Projects")
+        user_1 = {
+            'email': "rahman.s@e360africa.com",
+            'first_name': 'Rahman',
+            'last_name': 'Solanke',
+            'role': r,
+            'department': d,
+            'staff_no': 'EMP-001',
+            'description': 'A good software engineer'
+        }
+        user_2 = {
+            'email': "raheem.s@e360africa.com",
+            'first_name': 'Raheem',
+            'last_name': 'Solanke',
+            'role': r,
+            'department': d,
+            'staff_no': 'EMP-002',
+            'description': 'A good software engineer'
+        }
+        user_3 = {
+            'email': "ahmed.o@e360africa.com",
+            'first_name': 'Ahmed',
+            'last_name': 'Solanke',
+            'role': r,
+            'department': d,
+            'staff_no': 'EMP-003',
+            'description': 'A good software engineer'
+        }
+        user_4 = {
+            'email': "rahmff.f@e360africa.com",
+            'first_name': 'jdjd',
+            'last_name': 'Solanke',
+            'role': r,
+            'department': d,
+            'staff_no': 'EMP-004',
+            'description': 'A good software engineer'
+        }
+        user_5 = {
+            'email': "quddus.s@e360africa.com",
+            'first_name': 'Quddus',
+            'last_name': 'Solanke',
+            'role': r,
+            'department': d,
+            'staff_no': 'EMP-005',
+            'description': 'A good software engineer'
+        }
+        get_user_model().objects.create_user(**user_1)
+        get_user_model().objects.create_user(**user_2)
+        get_user_model().objects.create_user(**user_3)
+        get_user_model().objects.create_user(**user_4)
+        get_user_model().objects.create_user(**user_5)
+
+        ClockType.objects.create(name="Office")
+        ClockType.objects.create(name="OnSIte")
+        self.authenticator()
+        #create different clock-in objects
+        url = reverse('attendance-list')
+        data_1 = {
+            'employee_id': 1,
+            'clock_in_type_id': 1
+        }
+        data_2 = {
+            'employee_id': 2,
+            'clock_in_type_id': 1
+        }
+        data_3 = {
+            'employee_id': 3,
+            'clock_in_type_id': 2
+        }
+        data_4 = {
+            'employee_id': 4,
+            'clock_in_type_id': 2
+        }
+        data_5 = {
+            'employee_id': 5,
+            'clock_in_type_id': 1
+        }
+        self.client.post(url, data_1, format='json')
+
+        self.client.post(url, data_2, format='json')
+        d_2 = Clock.objects.get(pk=2)
+        d_2.clock_in_timestamp = datetime.now()+timedelta(days=1)
+        d_2.save()
+
+        self.client.post(url, data_3, format='json')
+        d_3 = Clock.objects.get(pk=3)
+        d_3.clock_in_timestamp = datetime.now()+timedelta(days=2)
+        d_3.save()
+
+        self.client.post(url, data_4, format='json')
+        d_4 = Clock.objects.get(pk=4)
+        d_4.clock_in_timestamp = datetime.now()+timedelta(days=3)
+        d_4.save()
+
+        self.client.post(url, data_5, format='json')
+        d_5 = Clock.objects.get(pk=5)
+        d_5.clock_in_timestamp = datetime.now()+timedelta(days=4)
+        d_5.save()
+    
+    def authenticator(self):
+        url = reverse('login')
+        data = {
+            'email': 'rahman.s@e360africa.com',
+            'password': 'password'
+        }
+        response = self.client.post(url, data, format='json')
+        token = response.json()['access']
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+
+    def test_no_filter(self):
+        url = reverse('attendance-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 5)
+
+    def test_employee_id_filter(self):
+        url = reverse('attendance-list')
+        response = self.client.get(url, {'employee': 1})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]['employee'], 1)
+
+    def test_clock_type_filter(self):
+        url = reverse('attendance-list')
+        response_1 = self.client.get(url, {'type': 1})
+        response_2 = self.client.get(url, {'type': 2})
+        response_3 = self.client.get(url, {'type': 3})
+        self.assertEqual(response_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_3.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_1.json()), 3)
+        self.assertEqual(len(response_2.json()), 2)
+        self.assertEqual(len(response_3.json()), 0)
+
+    def test_start_date_filter(self):
+        url = reverse('attendance-list')
+        response = self.client.get(url, {'start': '2020-04-09'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 3)
+
+    def test_end_date_filter(self):
+        url = reverse('attendance-list')
+        response = self.client.get(url, {'end': '2020-04-09'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 3)
+
+    def test_start_and_end_date_filter(self):
+        url = reverse('attendance-list')
+        response = self.client.get(url, {'start':'2020-04-08','end': '2020-04-10'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 3)

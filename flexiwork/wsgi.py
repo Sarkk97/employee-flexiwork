@@ -8,9 +8,11 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/wsgi/
 """
 
 import os
-
+from decouple import config
 from django.core.wsgi import get_wsgi_application
 
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flexiwork.settings.production')
-
+if config('ENVIRONMENT') == 'staging':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flexiwork.settings.staging')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flexiwork.settings.production')
 application = get_wsgi_application()

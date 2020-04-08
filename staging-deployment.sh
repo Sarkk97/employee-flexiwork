@@ -23,8 +23,8 @@ ssh root@185.130.207.215 <<-EOF
     pip install -r requirements.txt
 
     # Create migrations
-    python manage.py makemigrations
-    python manage.py migrate
+    python manage.py makemigrations --settings=flexiwork.settings.staging
+    python manage.py migrate --settings=flexiwork.settings.staging
 
     # deactivate virtual environment
     deactivate

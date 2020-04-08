@@ -98,9 +98,9 @@ class PasswordResetRequest(APIView):
         else:
             token = default_token_generator.make_token(employee)
             uid = urlsafe_base64_encode(force_bytes(employee.pk))
-            payload = request.build_absolute_uri(reverse('password-reset-confirm', kwargs={'uid64':uid, 'token':token}))
+            reset_link = request.build_absolute_uri(reverse('password-reset-confirm', kwargs={'uid64':uid, 'token':token}))
             
-            email_body = 'Your password request was succesful. Click on the Verification link {} to proceed'.format(payload)
+            email_body = 'Your password request was succesful. Click on the Verification link {} to proceed'.format(reset_link)
             email_recipient = [employee_email]
             email = EmailMessage(
                 self.mail_context['subject'],
@@ -111,7 +111,7 @@ class PasswordResetRequest(APIView):
             )
             email.send()
 
-            return Response(payload, status=status.HTTP_200_OK)
+            return Response({"reset_link": reset_link}, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirm(APIView):

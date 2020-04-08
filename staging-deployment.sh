@@ -9,7 +9,6 @@ ssh root@185.130.207.215 <<-EOF
     cd ./live
     cp ../.env .
     
-
     # Install virtual env
     python3 -m venv .virtualenv
 

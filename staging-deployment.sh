@@ -15,7 +15,7 @@ ssh root@185.130.207.215 <<-EOF
 
     # Activate virtual environment
     source .virtualenv/bin/activate
-
+    
     # upgrade pip
     pip install --upgrade pip
 

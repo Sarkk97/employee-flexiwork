@@ -331,18 +331,22 @@ class TestAttendanceFilters(APITestCase):
 
     def test_start_date_filter(self):
         url = reverse('attendance-list')
-        response = self.client.get(url, {'start': '2020-04-09'})
+        start = datetime.date(datetime.now()+timedelta(days=2)).strftime("%Y-%m-%d")
+        response = self.client.get(url, {'start': start})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)
 
     def test_end_date_filter(self):
         url = reverse('attendance-list')
-        response = self.client.get(url, {'end': '2020-04-09'})
+        end = datetime.date(datetime.now()+timedelta(days=2)).strftime("%Y-%m-%d")
+        response = self.client.get(url, {'end': end})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)
 
     def test_start_and_end_date_filter(self):
         url = reverse('attendance-list')
+        start = datetime.date(datetime.now()+timedelta(days=1)).strftime("%Y-%m-%d")
+        end = datetime.date(datetime.now()+timedelta(days=3)).strftime("%Y-%m-%d")
         response = self.client.get(url, {'start':'2020-04-08','end': '2020-04-10'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)

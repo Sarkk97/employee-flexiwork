@@ -68,7 +68,7 @@ class EmployeeResetPassword(APITestCase):
         url = reverse('password-reset')
         response = self.client.post(url, {'email': 'rahman.s@e360africa.com'}, format='json')
 
-        reset_link = response.json()
+        reset_link = response.json()["reset_link"]
         reset_response = self.client.get(reset_link)
         self.assertEqual(reset_response.status_code, status.HTTP_200_OK)
         self.assertEqual(reset_response.json()['user_id'], 1)
@@ -78,7 +78,7 @@ class EmployeeResetPassword(APITestCase):
         url = reverse('password-reset')
         response = self.client.post(url, {'email': 'rahman.s@e360africa.com'}, format='json')
 
-        reset_link = response.json()[:-2]
+        reset_link = response.json()["reset_link"][:-2]
         reset_response = self.client.get(reset_link)
         self.assertEqual(reset_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertContains(reset_response, 'Verification token is invalid or has expired!', status_code=400)
@@ -87,7 +87,7 @@ class EmployeeResetPassword(APITestCase):
         url = reverse('password-reset')
         response = self.client.post(url, {'email': 'rahman.s@e360africa.com'}, format='json')
 
-        reset_link = response.json()
+        reset_link = response.json()["reset_link"]
         reset_response = self.client.get(reset_link)
         self.assertEqual(reset_response.status_code, status.HTTP_200_OK)
 
@@ -103,7 +103,7 @@ class EmployeeResetPassword(APITestCase):
         url = reverse('password-reset')
         response = self.client.post(url, {'email': 'rahman.s@e360africa.com'}, format='json')
 
-        reset_link = response.json()
+        reset_link = response.json()["reset_link"]
         reset_response = self.client.get(reset_link)
         self.assertEqual(reset_response.status_code, status.HTTP_200_OK)
 
@@ -156,7 +156,7 @@ class EmployeeResetPassword(APITestCase):
         #Active user requests for password change
         url = reverse('password-reset')
         response = self.client.post(url, {'email': 'rahman.s@e360africa.com'}, format='json')
-        reset_link = response.json()
+        reset_link = response.json()["reset_link"]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         #Verification mail is sent to user email

@@ -158,7 +158,7 @@ class PasswordChange(APIView):
 
 class DepartmentList(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
@@ -172,7 +172,7 @@ class DepartmentDetail(generics.RetrieveUpdateAPIView):
 
 class RoleList(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
 

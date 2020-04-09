@@ -347,6 +347,6 @@ class TestAttendanceFilters(APITestCase):
         url = reverse('attendance-list')
         start = datetime.date(datetime.now()+timedelta(days=1)).strftime("%Y-%m-%d")
         end = datetime.date(datetime.now()+timedelta(days=3)).strftime("%Y-%m-%d")
-        response = self.client.get(url, {'start':'2020-04-08','end': '2020-04-10'})
+        response = self.client.get(url, {'start':start,'end': end})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)

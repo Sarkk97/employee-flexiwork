@@ -51,6 +51,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
                 'department','department_id','role', 'role_id','description']
         extra_kwargs = {'id': {'read_only': True}}
 
+
     '''
     overwrite create method to use create_users for user objects so as to 
     use password hashing

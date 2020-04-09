@@ -26,7 +26,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'logfile': {
-            'class': 'logging.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(STAGING_BASE_DIR, 'server.log'),
             'maxBytes': 1024*1024*15, # 15MB
             'backupCount': 10,

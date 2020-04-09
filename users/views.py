@@ -38,7 +38,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 class EmployeeList(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     queryset = get_user_model().objects.all()
     
     def get_serializer_class(self):

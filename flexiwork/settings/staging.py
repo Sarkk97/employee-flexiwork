@@ -41,7 +41,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['logfile'],
-            'level': 'INFO'
+            'level': 'WARNING'
         },
     },
 }

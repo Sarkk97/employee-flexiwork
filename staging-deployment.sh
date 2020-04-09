@@ -26,6 +26,8 @@ ssh root@185.130.207.215 <<-EOF
     python manage.py makemigrations --settings=flexiwork.settings.staging
     python manage.py migrate --settings=flexiwork.settings.staging
 
+    python manage.py test --settings=flexiwork.settings.staging
+    
     # deactivate virtual environment
     deactivate
 

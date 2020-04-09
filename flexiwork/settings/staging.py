@@ -28,7 +28,7 @@ LOGGING = {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(name)s.%(funcName)s:%(lineno)s- %(message)s'
         }
-    }
+    },
     'handlers': {
         'logfile': {
             'class': 'logging.handlers.RotatingFileHandler',

@@ -1,5 +1,4 @@
 rsync -vzrh . root@185.130.207.215:/var/www/PYTHON/flexiwork_backend/temp
-
 ssh root@185.130.207.215 <<-EOF
     cd /var/www/PYTHON/flexiwork_backend
     rm -rf ./backup # Delete previous backup
@@ -25,8 +24,6 @@ ssh root@185.130.207.215 <<-EOF
     # Create migrations
     python manage.py makemigrations --settings=flexiwork.settings.staging
     python manage.py migrate --settings=flexiwork.settings.staging
-
-    python manage.py test --settings=flexiwork.settings.staging
     
     # deactivate virtual environment
     deactivate
